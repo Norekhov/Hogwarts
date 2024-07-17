@@ -3,6 +3,7 @@ package ru.hogwarts.school.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.hogwarts.school.model.Faculty;
+import ru.hogwarts.school.model.Student;
 import ru.hogwarts.school.service.FacultyService;
 
 import java.util.List;
@@ -31,7 +32,7 @@ public class FacultyController {
     @PutMapping("/{id}")
     public void update(@PathVariable long id,
                        @RequestBody Faculty faculty) {
-        facultyService.update(id,faculty);
+        facultyService.update(id, faculty);
     }
 
     @DeleteMapping("{id}")
@@ -39,9 +40,19 @@ public class FacultyController {
         return facultyService.remove(id);
     }
 
-    @GetMapping
+    @GetMapping(params = "color")
     public List<Faculty> getFacultyByColor(@RequestParam String color) {
         return facultyService.getFacultyByColor(color);
+    }
+
+    @GetMapping(params = "colorOrName")
+    public List<Faculty> getFacultyByColorOrName(@RequestParam String colorOrName) {
+        return facultyService.getFacultyByColorOrName(colorOrName);
+    }
+
+    @GetMapping("/{id}/students")
+    public List<Student> findStudentsByFacultyId(@PathVariable long id) {
+        return facultyService.findStudentsByFacultyId(id);
     }
 }
 
