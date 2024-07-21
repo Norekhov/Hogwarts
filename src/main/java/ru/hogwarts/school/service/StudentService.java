@@ -67,9 +67,8 @@ public class StudentService {
 
     private Faculty findFaculty(Long facultyId) {
         Faculty faculty = null;
-        faculty = facultyRepository.findById(facultyId)
+        return facultyRepository.findById(facultyId)
                 .orElseThrow(() -> new FacultyNotFoundException(facultyId));
-        return faculty;
     }
 
 
