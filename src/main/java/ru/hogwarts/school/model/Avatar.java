@@ -1,8 +1,10 @@
 package ru.hogwarts.school.model;
 
 import jakarta.persistence.*;
+import lombok.NoArgsConstructor;
 
 @Entity
+@NoArgsConstructor
 public class Avatar {
 
     @Id
