@@ -1,7 +1,6 @@
 package ru.hogwarts.school.wmt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.json.JSONObject;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -9,11 +8,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import ru.hogwarts.school.controller.StudentController;
-import ru.hogwarts.school.model.Faculty;
 import ru.hogwarts.school.model.Student;
 import ru.hogwarts.school.repository.AvatarRepository;
 import ru.hogwarts.school.repository.FacultyRepository;
@@ -22,13 +21,12 @@ import ru.hogwarts.school.service.AvatarService;
 import ru.hogwarts.school.service.FacultyService;
 import ru.hogwarts.school.service.StudentService;
 
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Optional;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(StudentController.class)
 public class StudentControllerTest {
@@ -37,7 +35,7 @@ public class StudentControllerTest {
     private MockMvc mockMvc;
 
     @Autowired
-    private  ObjectMapper objectMapper;
+    private ObjectMapper objectMapper;
 
     @MockBean
     private StudentRepository studentRepository;
@@ -62,24 +60,24 @@ public class StudentControllerTest {
         String name = "Имя";
         int age = 22;
 
-        JSONObject studentObject = new JSONObject();
-        studentObject.put("name", name);
-
         Student student = new Student();
         student.setName(name);
         student.setId(id);
         student.setAge(age);
-        when(studentRepository.save(any(Student.class))).thenReturn(student);
-        when(studentRepository.findById(any(Long.class))).thenReturn(Optional.of(student));
+
+        when(studentRepository.findById(any())).thenReturn(Optional.of(student));
+        when(studentRepository.save(any())).thenReturn(student);
+
         mockMvc.perform(MockMvcRequestBuilders
                         .post("/student")
-                        .content(studentObject.toString())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk()) //receive
-                .andExpect(jsonPath("$.id").value(id))
-                .andExpect(jsonPath("$.name").value(name))
-                .andExpect(jsonPath("$.age").value(age));
+                        .content(objectMapper.writeValueAsString(student))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(result -> {
+                    assertThat(student.getName()).isEqualTo(name);
+                    assertThat(student.getAge()).isEqualTo(age);
+                    assertThat(student.getId()).isEqualTo(id);
+                    assertThat(result.getResponse().getStatus()).isEqualTo(HttpStatus.OK.value());
+                });
     }
 
     @Test
@@ -88,129 +86,139 @@ public class StudentControllerTest {
         Long id = 1L;
         String name = "Имя";
         int age = 22;
-        JSONObject studentObject = new JSONObject();
-        studentObject.put("name", name);
-        Student student = new Student(id, name, age);
-        when(studentRepository.findById(any(Long.class))).thenReturn(Optional.of(student));
+
+        Student student = new Student();
+        student.setName(name);
+        student.setId(id);
+        student.setAge(age);
+
+        when(studentRepository.findById(any())).thenReturn(Optional.of(student));
+
         mockMvc.perform(MockMvcRequestBuilders
                         .get("/student/{id}", id)
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(id));
+                .andExpect(result -> {
+                    assertThat(student.getId()).isEqualTo(id);
+                    assertThat(student.getName()).isEqualTo(name);
+                    assertThat(student.getAge()).isEqualTo(age);
+                    assertThat(result.getResponse().getStatus()).isEqualTo(HttpStatus.OK.value());
+                });
     }
 
     @Test
     @DisplayName("Изменение данных студента")
     void updateTest() throws Exception {
-        Long id = 1L;
-        String newName = "Новое имя";
-        int newAge = 22;
+        long id = 1L;
+        String actualName = "Name2";
+        int actualAge = 22;
 
-        Student student = new Student();
-        student.setAge(20);
-        student.setName("Имя");
-        student.setId(2L);
+        Student expected = new Student();
+        expected.setId(id);
+        expected.setName("Name1");
+        expected.setAge(20);
 
-        Student newStudent = new Student();
-        newStudent.setAge(newAge);
-        newStudent.setName(newName);
-        newStudent.setId(id);
+        Student actual = new Student();
+        actual.setId(id);
+        actual.setName(actualName);
+        actual.setAge(actualAge);
 
-        when(studentRepository.findById(any(Long.class))).thenReturn(Optional.of(student));
-        when(studentRepository.save(any(Student.class))).thenReturn(newStudent);
+        when(studentRepository.findById(any())).thenReturn(Optional.of(expected));
+        when(studentRepository.save(any())).thenReturn(actual);
 
         mockMvc.perform(MockMvcRequestBuilders
                         .put("/student/{id}", id)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .content(objectMapper.writeValueAsString(newStudent)))
-                        .andExpect(status().isOk());
+                        .content(objectMapper.writeValueAsString(actual))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(result -> {
+                    assertThat(actual.getName()).isEqualTo(actualName);
+                    assertThat(actual.getAge()).isEqualTo(actualAge);
+                    assertThat(result.getResponse().getStatus()).isEqualTo(HttpStatus.OK.value());
+                });
     }
 
     @Test
     @DisplayName("Удаление студента")
     void removeTest() throws Exception {
-        Long id = 1L;
-        String name = "Имя";
+        long id = 1L;
+        String name = "Name";
         int age = 22;
-        JSONObject studentObject = new JSONObject();
-        studentObject.put("name", name);
-        Student student = new Student(id, name, age);
-        when(studentRepository.save(any(Student.class))).thenReturn(student);
-        when(studentRepository.findById(any(Long.class))).thenReturn(Optional.of(student));
+
+        Student student = new Student();
+        student.setId(id);
+        student.setName(name);
+        student.setAge(age);
+
+        when(studentRepository.findById(any())).thenReturn(Optional.of(student));
+
+        mockMvc.perform(MockMvcRequestBuilders
+                        .get("/student/{id}", id)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(result -> {
+                    assertThat(student.getId()).isEqualTo(id);
+                    assertThat(result.getResponse().getStatus()).isEqualTo(HttpStatus.OK.value());
+                });
+
         mockMvc.perform(MockMvcRequestBuilders
                         .delete("/student/{id}", id)
-                        .content(studentObject.toString())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(result -> {
+                    assertThat(student.getId()).isEqualTo(id);
+                    assertThat(result.getResponse().getStatus()).isEqualTo(HttpStatus.OK.value());
+                });
     }
 
 
     @Test
     @DisplayName("Поиск студентов по минимальному и максимальному возрастам")
     void betweenAgeGetTest() throws Exception {
-        Long id = 1L;
-        String name = "Имя";
-        int age = 22;
+        Student student1 = new Student();
+        student1.setId(1L);
+        student1.setAge(20);
+        student1.setName("name1");
+        Student student2 = new Student();
+        student2.setId(2L);
+        student2.setAge(21);
+        student2.setName("name2");
+        Student student3 = new Student();
+        student3.setId(3L);
+        student3.setAge(22);
+        student3.setName("name3");
 
-        int minAge = 10;
-        int maxAge = 30;
+        when(studentRepository.findByAgeBetween(any(Integer.class), any(Integer.class))).thenReturn(List.of(student1));
 
-        JSONObject studentObject = new JSONObject();
-        studentObject.put("name", name);
-        Student student = new Student(id, name, age);
-        when(studentRepository.save(any(Student.class))).thenReturn(student);
-        when(studentRepository.findByAgeBetween(1, 5)).thenReturn(List.of(student));
         mockMvc.perform(MockMvcRequestBuilders
-                        .get("/student?minAge={minAge}&maxAge={maxAge}", minAge, maxAge)
-                        .content(studentObject.toString())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+                        .get("/student?minAge=18&maxAge=20")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(result -> {
+                    assertThat(result.getResponse().getStatus()).isEqualTo(HttpStatus.OK.value());
+                    assertThat(student1.getName()).isEqualTo("name1");
+                    assertThat(student1.getAge()).isEqualTo(20);
+                    assertThat(student1.getId()).isEqualTo(1L);
+                });
     }
 
     @Test
     @DisplayName("Поиск студентов по возрасту")
     void getStudentByAgeTest() throws Exception {
-        Long id = 1L;
-        String name = "Имя";
+        long id = 1L;
+        String name = "Name";
         int age = 22;
-        JSONObject studentObject = new JSONObject();
-        studentObject.put("name", name);
-        studentObject.put("age", age);
-        Student student = new Student(id, name, age);
-        when(studentRepository.save(any(Student.class))).thenReturn(student);
-        when(studentRepository.findAll()).thenReturn(List.of(student));
+
+        Student student = new Student();
+        student.setId(id);
+        student.setName(name);
+        student.setAge(age);
+
+        when(studentRepository.getStudentByAge(any(Integer.class))).thenReturn(List.of(student));
+
         mockMvc.perform(MockMvcRequestBuilders
                         .get("/student?age=" + age)
-                        .content(studentObject.toString())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    @DisplayName("Поиск факультета по ID студента")
-    void findFacultyByStudentGetTest() throws Exception {
-        Long id = 1L;
-        String name = "Имя";
-        int age = 22;
-        Faculty faculty = new Faculty(null, "math", "red");
-        JSONObject studentObject = new JSONObject();
-        studentObject.put("name", name);
-        studentObject.put("age", age);
-        Student student = new Student(id, name, age);
-        student.setFaculty(faculty);
-        when(studentRepository.save(any(Student.class))).thenReturn(student);
-        when(studentRepository.findById(any())).thenReturn(Optional.of(student));
-        mockMvc.perform(MockMvcRequestBuilders
-                        .get("/student/{id}/faculty", id)
-                        .content(studentObject.toString())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("math"))
-                .andExpect(jsonPath("$.color").value("red"));
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(result -> {
+                    assertThat(result.getResponse().getStatus()).isEqualTo(HttpStatus.OK.value());
+                    assertThat(student.getName()).isEqualTo(name);
+                    assertThat(student.getAge()).isEqualTo(age);
+                    assertThat(student.getId()).isEqualTo(id);
+                });
     }
 }

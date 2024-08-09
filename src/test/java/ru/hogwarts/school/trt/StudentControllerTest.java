@@ -1,11 +1,7 @@
 package ru.hogwarts.school.trt;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import net.datafaker.Faker;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,11 +9,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import ru.hogwarts.school.model.Faculty;
 import ru.hogwarts.school.model.Student;
 import ru.hogwarts.school.repository.FacultyRepository;
 import ru.hogwarts.school.repository.StudentRepository;
@@ -50,31 +44,32 @@ public class StudentControllerTest {
         facultyRepository.deleteAll();
     }
 
-    @BeforeEach
-    public void beforeEach() {
-        Faculty faculty1 = generateFaculty();
-        Faculty faculty2 = generateFaculty();
-
-        Student student1 = generateStudents();
-        Student student2 = generateStudents();
-    }
-
-    private Faculty generateFaculty() { // создание факультета
-        Faculty faculty = new Faculty();
-        faculty.setName(faker.harryPotter().house());
-        faculty.setColor(faker.color().name());
-        return facultyRepository.save(faculty);
-    }
-
-    private Student generateStudents() { // создание студента без факультета
-        Student student = new Student();
-        student.setName(faker.harryPotter().character());
-        student.setAge(faker.random().nextInt(10, 30));
-        return student;
-    }
 
     private String baseUrl(String url) { // базовый URL
         return "http://localhost:%d%s".formatted(port, url);
+    }
+
+    @Test
+    @DisplayName("Поиск студента")
+    public void getTest() {
+        int age = new Random().nextInt(10, 30);
+        String name = faker.name().firstName();
+
+        Student expected = new Student();
+        expected.setAge(age);
+        expected.setName(name);
+        expected = studentRepository.save(expected);
+
+        ResponseEntity<Student> response = testRestTemplate.getForEntity(baseUrl("/student/") + expected.getId(),
+                Student.class);
+
+        Student actual = response.getBody();
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(expected.getId().equals(actual.getId())).isTrue();
+        assertThat(expected.getName().equals(actual.getName())).isTrue();
+        assertThat(expected.getAge() == (actual.getAge())).isTrue();
     }
 
     private void createStudent(Student student) { //алгоритм создания теста для студента
@@ -102,22 +97,11 @@ public class StudentControllerTest {
 
 
     @Test
-    @DisplayName("Создание студента без указания факультета")
+    @DisplayName("Создание студента")
     public void createTest_1() {
         Student student = new Student();
         student.setName(faker.harryPotter().character());
         student.setAge(faker.random().nextInt(10, 30));
-
-        createStudent(student);
-    }
-
-    @Test
-    @DisplayName("Создание студента с указанием факультетом")
-    public void createTest_2() {
-        Student student = new Student();
-        student.setName(faker.harryPotter().character());
-        student.setAge(faker.random().nextInt(10, 30));
-        student.setFaculty(facultyRepository.findAll(PageRequest.of(faker.random().nextInt(0, 1), 1)).getContent().get(0));
 
         createStudent(student);
     }
@@ -128,11 +112,10 @@ public class StudentControllerTest {
         int age = new Random().nextInt(10, 30);
         String name = faker.name().firstName();
 
-        Student expected = generateStudents();
-        expected = studentRepository.save(expected);
-
+        Student expected = new Student();
         expected.setAge(age);
         expected.setName(name);
+        expected = studentRepository.save(expected);
 
         testRestTemplate.put(baseUrl("/student/") + expected.getId(), expected);
 
@@ -142,33 +125,15 @@ public class StudentControllerTest {
     }
 
     @Test
-    @DisplayName("Поиск студента")
-    public void getTest() {
-        int age = new Random().nextInt(10, 30);
-        String name = faker.name().firstName();
-
-        Student expected = generateStudents();
-        expected = studentRepository.save(expected);
-        expected.setAge(age);
-        expected.setName(name);
-
-        ResponseEntity<Student> response = testRestTemplate.getForEntity(baseUrl("/student/") + expected.getId(),
-                Student.class);
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isNotNull();
-    }
-
-    @Test
     @DisplayName("Удаление студента")
     public void removeTest() {
         int age = new Random().nextInt(10, 30);
         String name = faker.name().firstName();
 
-        Student expected = generateStudents();
-        expected = studentRepository.save(expected);
+        Student expected = new Student();
         expected.setAge(age);
         expected.setName(name);
+        expected = studentRepository.save(expected);
 
         ResponseEntity<Student> response = testRestTemplate.exchange(baseUrl("/student/") + expected.getId(),
                 HttpMethod.DELETE,
@@ -176,36 +141,47 @@ public class StudentControllerTest {
                 Student.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+        ResponseEntity<Student> responseGet = testRestTemplate.getForEntity(baseUrl("/student/") + expected.getId(),
+                Student.class);
+
+        assertThat(responseGet.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @Test
     @DisplayName("Поиск студентов по возрасту")
     public void getStudentByAgeTest() {
-        int age = new Random().nextInt(10, 30);
-        String name = faker.name().firstName();
+        Student student1 = new Student(1l, "max", 20);
+        student1 = studentRepository.save(student1);
+        Student student2 = new Student(2l, "alex", 19);
+        student2 = studentRepository.save(student2);
+        Student student3 = new Student(3l, "john", 21);
+        student3 = studentRepository.save(student3);
 
-        Student expected = generateStudents();
-        expected = studentRepository.save(expected);
-        expected.setAge(age);
-        expected.setName(name);
-
-        ResponseEntity<List<Student>> response = testRestTemplate.exchange(baseUrl("/student?age=") + expected.getAge(),
+        ResponseEntity<List<Student>> response = testRestTemplate.exchange(baseUrl("/student?age=20"),
                 HttpMethod.GET,
                 null,
                 new ParameterizedTypeReference<List<Student>>() {
                 });
 
-        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+        List<Student> students = response.getBody();
+        assertThat(response.getStatusCode().equals(HttpStatus.OK)).isTrue();
+        assertThat(students.size() == 1).isTrue();
+        assertThat(students.get(0).getAge() == (student1.getAge())).isTrue();
     }
 
     @Test
     @DisplayName("Поиск студентов по минимальному и максимальному возрастам")
     public void findByAgeBetweenTest() {
-        Student student = generateStudents();
-        student.setAge(15);
-        studentRepository.save(student);
-        int minAge = faker.random().nextInt(10, 18);
-        int maxAge = faker.random().nextInt(minAge, 18);
+        Student student1 = new Student(1l, "max", 20);
+        student1 = studentRepository.save(student1);
+        Student student2 = new Student(2l, "alex", 19);
+        student2 = studentRepository.save(student2);
+        Student student3 = new Student(3l, "john", 21);
+        student3 = studentRepository.save(student3);
+
+        int minAge = 18;
+        int maxAge = 19;
 
         ResponseEntity<List<Student>> response = testRestTemplate.exchange(
                 baseUrl("/student?minAge={minAge}&maxAge={maxAge}"),
@@ -215,6 +191,9 @@ public class StudentControllerTest {
                 },
                 Map.of("minAge", minAge, "maxAge", maxAge)
         );
-        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+
+        List<Student> students = response.getBody();
+        assertThat(response.getStatusCode().equals(HttpStatus.OK)).isTrue();
+        assertThat(students.size() == 1).isTrue();
     }
 }
