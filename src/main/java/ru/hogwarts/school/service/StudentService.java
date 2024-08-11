@@ -71,8 +71,19 @@ public class StudentService {
                 .orElseThrow(() -> new FacultyNotFoundException(facultyId));
     }
 
-
     public Faculty findStudentsByFaculty(long id) {
         return get(id).getFaculty();
+    }
+
+    public long getCountStudents() {
+        return studentRepository.getCountStudents();
+    }
+
+    public double getAvgAgeStudents() {
+        return studentRepository.getAvgAgeStudents();
+    }
+
+    public List<Student> getDescFiveStudents() {
+        return studentRepository.getDescFiveStudents();
     }
 }
