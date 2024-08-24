@@ -62,6 +62,18 @@ public class FacultyController {
     public List<Student> findStudentsByFacultyId(@PathVariable long id) {
         return facultyService.findStudentsByFacultyId(id);
     }
+
+    @GetMapping("/getTheLongestFacultyName")
+    @Operation(summary = "Получение самого длинного названия факультета")
+    public String getTheLongestFacultyName() {
+        return facultyService.getTheLongestFacultyName();
+    }
+
+    @GetMapping("/getIntegerValue")
+    @Operation(summary = "Получение целочисленного значения")
+    public Integer getIntegerValue() {
+        return facultyService.getIntegerValue();
+    }
 }
 
 

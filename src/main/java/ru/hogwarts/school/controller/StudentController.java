@@ -17,7 +17,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/student")
-@Tag(name="Страница работы со студентами")
+@Tag(name = "Страница работы со студентами")
 public class StudentController {
 
     private final StudentService studentService;
@@ -62,7 +62,7 @@ public class StudentController {
     @GetMapping
     @Operation(summary = "Поиск студентов по минимальному и максимальному возрасту")
     public List<Student> findByAgeBetween(@RequestParam("minAge") int minAge,
-                                          @RequestParam("maxAge")int maxAge) {
+                                          @RequestParam("maxAge") int maxAge) {
         return studentService.findByAgeBetween(minAge, maxAge);
     }
 
@@ -109,5 +109,17 @@ public class StudentController {
     @Operation(summary = "Получение пяти последних студентов")
     public List<Student> getDescFiveStudents() {
         return studentService.getDescFiveStudents();
+    }
+
+    @GetMapping("/studentsWithNameStartingWithA")
+    @Operation(summary = "Получение списка студентов, чье имя начинается на букву А")
+    public List<String> getStudentsWithNameStartingWithA() {
+        return studentService.getStudentsWithNameStartingWithA();
+    }
+
+    @GetMapping("/getTheAverageAgeOfStudents")
+    @Operation(summary = "Получение среднего возраста всех студентов")
+    public double getTheAverageAgeOfStudents() {
+        return studentService.getTheAverageAgeOfStudents();
     }
 }
