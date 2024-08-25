@@ -20,6 +20,7 @@ public class StudentService {
     private StudentRepository studentRepository;
     private FacultyRepository facultyRepository;
     private static final Logger logger = LoggerFactory.getLogger(StudentService.class);
+    final Object flag = new Object();
 
     public StudentService(StudentRepository studentRepository, FacultyRepository facultyRepository) {
         this.studentRepository = studentRepository;
@@ -144,6 +145,53 @@ public class StudentService {
                 .collect(Collectors.averagingInt(Student::getAge));
     }
 
+    int count = 0;
 
+    void printStudentsNames(List<String> name, int id) {
+        if (name.get(id) != null) {
+            System.out.println(name.get(id) + ", " + count);
+            count++;
+        }
+    }
 
+    public void getAllStudentsParallelMode() {
+        logger.info("Был вызван метод для \"getAllStudentParallelMode\"");
+        List<String> namesOfStudentsInParallelMode = studentRepository.getAllStudentParallelMode();
+        System.out.println(namesOfStudentsInParallelMode);
+        printStudentsNames(namesOfStudentsInParallelMode, 0);
+        printStudentsNames(namesOfStudentsInParallelMode, 1);
+
+        new Thread(() -> {
+            printStudentsNames(namesOfStudentsInParallelMode, 2);
+            printStudentsNames(namesOfStudentsInParallelMode, 3);
+        }).start();
+
+        new Thread(() -> {
+            printStudentsNames(namesOfStudentsInParallelMode, 4);
+            printStudentsNames(namesOfStudentsInParallelMode, 5);
+
+        }).start();
+    }
+
+    public void getAllStudentsSynchronousMode() {
+        logger.info("Был вызван метод для \"getAllStudentParallelMode\"");
+        List<String> namesOfStudentsInParallelMode = studentRepository.getAllStudentParallelMode();
+        System.out.println(namesOfStudentsInParallelMode);
+        printStudentsNames(namesOfStudentsInParallelMode, 0);
+        printStudentsNames(namesOfStudentsInParallelMode, 1);
+
+        new Thread(() -> {
+            synchronized (flag) {
+                printStudentsNames(namesOfStudentsInParallelMode, 2);
+                printStudentsNames(namesOfStudentsInParallelMode, 3);
+            }
+        }).start();
+
+        new Thread(() -> {
+            synchronized (flag) {
+            printStudentsNames(namesOfStudentsInParallelMode, 4);
+            printStudentsNames(namesOfStudentsInParallelMode, 5);
+            }
+        }).start();
+    }
 }

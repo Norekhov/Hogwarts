@@ -122,4 +122,16 @@ public class StudentController {
     public double getTheAverageAgeOfStudents() {
         return studentService.getTheAverageAgeOfStudents();
     }
+
+    @GetMapping("/students/print-parallel")
+    @Operation(summary = "Получение списка студентов в параллельном режиме")
+    public void getAllStudentsParallelMode () {
+         studentService.getAllStudentsParallelMode();
+    }
+
+    @GetMapping("/students/print-synchronized")
+    @Operation(summary = "Получение списка студентов в синхронном режиме")
+    public void getAllStudentsSynchronousMode () {
+        studentService.getAllStudentsSynchronousMode();
+    }
 }
