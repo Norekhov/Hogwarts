@@ -13,7 +13,9 @@ import ru.hogwarts.school.repository.StudentRepository;
 import java.util.List;
 import java.util.stream.Collectors;
 
-
+/**
+*Creating a service for working with students
+*/
 @Service
 public class StudentService {
 
@@ -26,7 +28,9 @@ public class StudentService {
         this.studentRepository = studentRepository;
         this.facultyRepository = facultyRepository;
     }
-
+/**
+*Implementation of the method for creating a student
+*/
     public Student create(Student student) {
         logger.info("Был вызван метод для \"createStudent\"");
         Faculty faculty = null;
@@ -42,7 +46,9 @@ public class StudentService {
         logger.debug("Был передан \"student\"={} в репозиторий из метода \"createStudent\"", student);
         return studentRepository.save(student);
     }
-
+/**
+*Implementation of the method for changing the student
+*/
     public void update(long id, Student student) {
         logger.info("Был вызван метод для \"updateStudent\"");
         logger.debug("Был запрос \"studentRepository.findById(id)\"={} " + "в репозитории из метода \"updateStudent\"", id);
@@ -64,7 +70,9 @@ public class StudentService {
         oldStudent.setFaculty(faculty);
         studentRepository.save(oldStudent);
     }
-
+/**
+*Implementation of the method for obtaining a student
+*/
     public Student get(long id) {
         logger.info("Был вызван метод для \"getStudent\"");
         logger.debug("Был запрос \"studentRepository.findById(id)\"={} в репозитории из метода \"getStudent\"", id);
@@ -73,7 +81,9 @@ public class StudentService {
             return new StudentNotFoundException(id);
         });
     }
-
+/**
+*Implementation of the method for removing a student
+*/
     public Student remove(long id) {
         logger.info("Был вызван метод для \"removeStudent\"");
         Student student = studentRepository.findById(id).orElseThrow(() -> {
@@ -84,17 +94,23 @@ public class StudentService {
         studentRepository.delete(student);
         return student;
     }
-
+/**
+*Implementation of the method for obtaining all students by age
+*/
     public List<Student> getStudentByAge(int age) {
         logger.info("Был вызван метод для \"getStudentByAge\"");
         return studentRepository.getStudentByAge(age);
     }
-
+/**
+*Implementation of the method for obtaining students with maximum and minimum ages
+*/
     public List<Student> findByAgeBetween(int minAge, int maxAge) {
         logger.info("Был вызван метод для \"findByAgeBetween\"");
         return studentRepository.findByAgeBetween(minAge, maxAge);
     }
-
+/**
+*Implementation of the method for obtaining students by faculty ID
+*/
     private Faculty findFaculty(Long facultyId) {
         logger.info("Был вызван метод для \"findFaculty\"");
         Faculty faculty = null;
@@ -104,28 +120,38 @@ public class StudentService {
                     return new FacultyNotFoundException(facultyId);
                 });
     }
-
+/**
+*Implementation of the method for obtaining students at the faculty
+*/
     public Faculty findStudentsByFaculty(long id) {
         logger.info("Был вызван метод для \"findStudentsByFaculty\"");
         logger.debug("Был запрос \"get(id).getFaculty()\"={} " + "в репозиторий из метода \"findStudentsByFaculty\"", id);
         return get(id).getFaculty();
     }
-
+/**
+*Implementation of the method for obtaining the number of students
+*/
     public long getCountStudents() {
         logger.info("Был вызван метод для \"getCountStudents\"");
         return studentRepository.getCountStudents();
     }
-
+/**
+*Implementation of the method for obtaining the average age of students
+*/
     public double getAvgAgeStudents() {
         logger.info("Был вызван метод для \"getAvgAgeStudents\"");
         return studentRepository.getAvgAgeStudents();
     }
-
+/**
+*Implementation of the method for obtaining the last five students
+*/
     public List<Student> getDescFiveStudents() {
         logger.info("Был вызван метод для \"getDescFiveStudents\"");
         return studentRepository.getDescFiveStudents();
     }
-
+/**
+*Implementation of the method for obtaining students with a name starting with A
+*/
     public List<String> getStudentsWithNameStartingWithA() {
         logger.info("Был вызван метод для \"getStudentsWithNameStartingWithA\"");
         return studentRepository.findAll()
@@ -136,7 +162,9 @@ public class StudentService {
                 .sorted()
                 .collect(Collectors.toList());
     }
-
+/**
+*Implementation of the method for obtaining the average age of students
+*/
     public double getTheAverageAgeOfStudents() {
         logger.info("Был вызван метод для \"getTheAverageAgeOfStudents\"");
         return studentRepository.findAll()
@@ -146,14 +174,18 @@ public class StudentService {
     }
 
     int count = 0;
-
+/**
+*Implementation of the method for printing students' names
+*/
     void printStudentsNames(List<String> name, int id) {
         if (name.get(id) != null) {
             System.out.println(name.get(id) + ", " + count);
             count++;
         }
     }
-
+/**
+*Implementation of the method for obtaining all students using a parallel mode
+*/
     public void getAllStudentsParallelMode() {
         logger.info("Был вызван метод для \"getAllStudentParallelMode\"");
         List<String> namesOfStudentsInParallelMode = studentRepository.getAllStudentParallelMode();
@@ -172,7 +204,9 @@ public class StudentService {
 
         }).start();
     }
-
+/**
+*Implementation of the method for obtaining all students using a synchronous mode
+*/
     public void getAllStudentsSynchronousMode() {
         logger.info("Был вызван метод для \"getAllStudentParallelMode\"");
         List<String> namesOfStudentsInParallelMode = studentRepository.getAllStudentParallelMode();
