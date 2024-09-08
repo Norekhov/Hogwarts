@@ -2,11 +2,15 @@ package ru.hogwarts.school.model;
 
 import jakarta.persistence.*;
 import lombok.NoArgsConstructor;
-
+/**
+*Create an Avatar class to add an avatar to a student
+*/
 @Entity
 @NoArgsConstructor
 public class Avatar {
-
+/**
+*Creating Strings for the Avatar Class
+*/
     @Id
     @GeneratedValue (strategy = GenerationType.IDENTITY)
     private Long id;
@@ -18,7 +22,9 @@ public class Avatar {
     @OneToOne
     @JoinColumn(name = "student_Id")
     private Student student;
-
+    /**
+*Creating Getters and Setters
+*/
     public Long getId() {
         return id;
     }
