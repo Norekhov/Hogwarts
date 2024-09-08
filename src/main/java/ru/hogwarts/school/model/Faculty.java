@@ -5,9 +5,14 @@ import jakarta.persistence.*;
 
 import java.util.List;
 import java.util.Objects;
-
+/**
+*Creating a Faculty class to work with faculties
+*/
 @Entity
 public class Faculty {
+    /**
+*Creating Strings for the Faculty Class
+*/
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -19,7 +24,9 @@ public class Faculty {
     @OneToMany(mappedBy = "faculty")
     @JsonIgnore
     private List<Student> students;
-
+/**
+*Creating a constructor for the Faculty class
+*/
     public Faculty(Long id, String name, String color) {
         this.id = id;
         this.name = name;
@@ -27,14 +34,15 @@ public class Faculty {
     }
 
     public Faculty() {
-
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(id, name, color);
     }
-
+/**
+*Creating Getters and Setters
+*/
     public Long getId() {
         return id;
     }
