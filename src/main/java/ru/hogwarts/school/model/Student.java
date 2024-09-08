@@ -4,10 +4,14 @@ import jakarta.persistence.*;
 
 
 import java.util.Objects;
-
+/**
+*Creating a Student class to work with students
+*/
 @Entity
 public class Student {
-
+/**
+*Creating Strings for the Student Class
+*/
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -18,7 +22,9 @@ public class Student {
     @ManyToOne
     @JoinColumn(name = "faculty_id")
     private Faculty faculty;
-
+/**
+*Creating a constructor for the Student class
+*/
     public Student(Long id, String name, int age) {
         this.id = id;
         this.name = name;
@@ -36,7 +42,9 @@ public class Student {
 
     public Student() {
     }
-
+/**
+*Creating Getters and Setters
+*/
     public Faculty getFaculty() {
         return faculty;
     }
