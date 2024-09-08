@@ -22,7 +22,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.UUID;
-
+/**
+*Creating a service for working with avatars
+*/
 @Service
 public class AvatarService {
 
@@ -30,7 +32,9 @@ public class AvatarService {
     private final AvatarRepository avatarRepository;
     private final Path path;
     private static final Logger logger = LoggerFactory.getLogger(AvatarService.class);
-
+/**
+*Creating a constructor for working with the service
+*/
     public AvatarService(StudentRepository studentRepository,
                          AvatarRepository avatarRepository,
                          @Value("$ {application.avatars-dir-name}") String avatarsDirName) {
@@ -38,7 +42,9 @@ public class AvatarService {
         this.avatarRepository = avatarRepository;
         path = Paths.get(avatarsDirName);
     }
-
+/**
+*Implementation of the method for loading an avatar
+*/
     @Transactional
     public void uploadAvatar(MultipartFile multipartFile, long studentId) {
         logger.info("Был вызван метод для \"uploadAvatar\"");
@@ -65,9 +71,11 @@ public class AvatarService {
             throw new AvatarException();
         }
     }
-
+/**
+*Implementation of the method for obtaining an avatar from the database
+*/
     public Pair<byte[], String> getAvatarFromDb(long studentId) {
-        logger.info("Был вызван метод для \"createStudent\"");
+        logger.info("Был вызван метод для \"getAvatarFromDb\"");
         Avatar avatar = avatarRepository.findByStudent_Id(studentId)
                 .orElseThrow(() -> {
                     logger.error("Нет студента с id = {}", studentId);
@@ -75,7 +83,9 @@ public class AvatarService {
                 });
         return Pair.of(avatar.getData(), avatar.getMediaType());
     }
-
+/**
+*Implementation of the method for obtaining a reduced avatar
+*/
     public Pair<byte[], String> getAvatarFromFs(long studentId) {
         logger.info("Был вызван метод для \"getAvatarFromFs\"");
         try {
@@ -90,7 +100,9 @@ public class AvatarService {
             throw new AvatarException();
         }
     }
-
+/**
+*Implementation of the method for getting list of avatars page by page
+*/
     public List<Avatar> getAllAvatarsByPage(Integer pageNumber, Integer pageSize) {
         logger.info("Был вызван метод для \"getAllAvatarsByPage\"");
         if (pageNumber == 0) {
