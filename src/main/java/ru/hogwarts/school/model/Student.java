@@ -2,7 +2,6 @@ package ru.hogwarts.school.model;
 
 import jakarta.persistence.*;
 
-
 import java.util.Objects;
 /**
 *Creating a Student class to work with students
