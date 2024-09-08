@@ -47,7 +47,7 @@ public class FacultyController {
         facultyService.update(id, faculty);
     }
 /**
-*Creating a controller to implement enpoints facultyService
+*Implementation of the faculty removal enpoint
 */
     @DeleteMapping("{id}")
     @Operation(summary = "Удаление факультета")
@@ -55,7 +55,7 @@ public class FacultyController {
         return facultyService.remove(id);
     }
 /**
-*Implementation of the faculty removal enpoint
+*Implementation of endpoint for searching faculty by color
 */
     @GetMapping(params = "color")
     @Operation(summary = "Поиск факультета по цвету")
