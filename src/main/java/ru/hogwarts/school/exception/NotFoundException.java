@@ -1,5 +1,7 @@
 package ru.hogwarts.school.exception;
-
+/**
+*Creating a class to throw an exception
+*/
 public abstract class NotFoundException extends RuntimeException{
 
     private long id;
