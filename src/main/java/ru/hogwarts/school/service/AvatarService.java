@@ -32,9 +32,7 @@ public class AvatarService {
     private final AvatarRepository avatarRepository;
     private final Path path;
     private static final Logger logger = LoggerFactory.getLogger(AvatarService.class);
-/**
-*Creating a constructor for working with the service
-*/
+
     public AvatarService(StudentRepository studentRepository,
                          AvatarRepository avatarRepository,
                          @Value("$ {application.avatars-dir-name}") String avatarsDirName) {
